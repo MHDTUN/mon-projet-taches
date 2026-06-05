@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Tâches</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Mon Tableau de Tâches</h1>
+    <button id="btnOuvrirModale">Nouvelle Tâche</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="corpsTableau">
+            </tbody>
+    </table>
+
+    <div id="maModale" class="modale">
+        <div class="contenu-modale">
+            <h2 id="titreModale">Créer une tâche</h2>
+            <p>Titre: <input type="text" id="inputTitre"></p>
+            <p>Statut: <input type="text" id="inputStatut" placeholder="ex: À faire"></p>
+            <button id="btnEnregistrer">Enregistrer</button>
+            <button id="btnFermerModale">Annuler</button>
+        </div>
+    </div>
+
+    <script>
+        const modale = document.getElementById('maModale');
+        const corpsTableau = document.getElementById('corpsTableau');
+        const titreModale = document.getElementById('titreModale');
+        
+        // Cette variable secrète va retenir l'ID de la tâche qu'on modifie. 
+        // Si elle est sur "null", ça veut dire qu'on crée une nouvelle tâche.
+        let idTacheEnCours = null; 
+
+        // --- GESTION DE LA MODALE ---
+        
+        // 1. Ouvrir pour CRÉER
+        document.getElementById('btnOuvrirModale').onclick = () => {
+            idTacheEnCours = null; // On remet à zéro
+            titreModale.innerText = "Créer une tâche";
+            document.getElementById('inputTitre').value = '';
+            document.getElementById('inputStatut').value = '';
+            modale.style.display = 'block';
+        };
+
+        // 2. Ouvrir pour MODIFIER (Cette fonction sera appelée par les boutons du tableau)
+        window.ouvrirModification = (id, titre, statut) => {
+            idTacheEnCours = id; // On mémorise la tâche qu'on touche
+            titreModale.innerText = "Modifier la tâche";
+            document.getElementById('inputTitre').value = titre;
+            document.getElementById('inputStatut').value = statut;
+            modale.style.display = 'block';
+        };
+
+        // Fermer
+        document.getElementById('btnFermerModale').onclick = () => {
+            modale.style.display = 'none';
+        };
+
+        // --- COMMUNICATION AVEC LE SERVEUR ---
+
+        // Afficher les tâches (READ)
+        async function chargerTaches() {
+            const reponse = await fetch('/taches');
+            const taches = await reponse.json();
+            
+            corpsTableau.innerHTML = ''; 
+            taches.forEach(tache => {
+                // On ajoute les boutons avec leurs actions spécifiques
+                corpsTableau.innerHTML += `
+                    <tr>
+                        <td>${tache.id}</td>
+                        <td>${tache.titre}</td>
+                        <td>${tache.statut}</td>
+                        <td>
+                            <button class="btn-modif" onclick="ouvrirModification(${tache.id}, '${tache.titre}', '${tache.statut}')">Modifier</button>
+                            <button class="btn-suppr" onclick="supprimerTache(${tache.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Supprimer une tâche (DELETE)
+        window.supprimerTache = async (id) => {
+            await fetch(`/taches/${id}`, { method: 'DELETE' });
+            chargerTaches(); // On met à jour l'affichage
+        };
+
+        // Enregistrer (CREATE ou UPDATE)
+        document.getElementById('btnEnregistrer').onclick = async () => {
+            const titre = document.getElementById('inputTitre').value;
+            const statut = document.getElementById('inputStatut').value;
+
+            if (idTacheEnCours === null) {
+                // Si pas d'ID, on CRÉE (POST)
+                await fetch('/taches', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titre: titre, statut: statut })
+                });
+            } else {
+                // Si on a un ID, on MODIFIE (PUT)
+                await fetch(`/taches/${idTacheEnCours}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ statut: statut }) 
+                });
+            }
+
+            modale.style.display = 'none'; 
+            chargerTaches(); 
+        };
+
+        chargerTaches();
+    </script>
+</body>
+</html>
