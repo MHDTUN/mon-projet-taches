@@ -6,12 +6,17 @@ app.use(express.json())
 app.use(express.static('public'))
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'test_projet',
-  password: 'MHD',
-  port: 5432,
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:MHD@localhost:5432/test_projet',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 })
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS taches (
+    id SERIAL PRIMARY KEY,
+    titre VARCHAR(255),
+    statut VARCHAR(255)
+  )
+`);
 
 // Récup toutes les tâches
 app.get('/taches', async (req, res) => {
