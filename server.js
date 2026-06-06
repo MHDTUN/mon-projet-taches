@@ -18,13 +18,13 @@ pool.query(`
   )
 `);
 
-// Récup toutes les tâches
+// Récupérer toutes les tâches
 app.get('/taches', async (req, res) => {
   const result = await pool.query('SELECT * FROM taches')
   res.json(result.rows)
 })
 
-// créer une tâche
+// Créer une tâche
 app.post('/taches', async (req, res) => {
   const { titre, statut } = req.body
   const result = await pool.query(
@@ -34,18 +34,18 @@ app.post('/taches', async (req, res) => {
   res.json(result.rows[0])
 })
 
-//Modifier une tâche
+// Modifier une tâche (titre et statut)
 app.put('/taches/:id', async (req, res) => {
   const { id } = req.params
-  const { statut } = req.body
+  const { titre, statut } = req.body
   const result = await pool.query(
-    'UPDATE taches SET statut = $1 WHERE id = $2 RETURNING *',
-    [statut, id]
+    'UPDATE taches SET titre = $1, statut = $2 WHERE id = $3 RETURNING *',
+    [titre, statut, id]
   )
   res.json(result.rows[0])
 })
 
-// DELETE - Supprimer une tâche
+// Supprimer une tâche
 app.delete('/taches/:id', async (req, res) => {
   const { id } = req.params
   await pool.query('DELETE FROM taches WHERE id = $1', [id])
