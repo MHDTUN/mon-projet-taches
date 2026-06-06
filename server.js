@@ -52,6 +52,12 @@ app.delete('/taches/:id', async (req, res) => {
   res.json({ message: 'Tâche supprimée' })
 })
 
+// --- NOUVEAU : Remise à zéro totale (Supprime tout et remet l'ID à 1) ---
+app.delete('/reset-taches', async (req, res) => {
+  await pool.query('TRUNCATE TABLE taches RESTART IDENTITY');
+  res.json({ message: 'Base de données remise à zéro complète' });
+})
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Serveur démarré sur le port ${port}`)
