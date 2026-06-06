@@ -9,6 +9,7 @@
 
     <h1>Mon Tableau de Tâches</h1>
     <button id="btnOuvrirModale">Nouvelle Tâche</button>
+    <button id="btnReset" style="background-color: #c0392b; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">Tout remettre à zéro</button>
 
     <table>
         <thead>
@@ -107,7 +108,7 @@
                     body: JSON.stringify({ titre: titre, statut: statut })
                 });
             } else {
-                // Si on a un ID, on MODIFIE (PUT) - CORRECTION APPLIQUÉE ICI
+                // Si on a un ID, on MODIFIE (PUT)
                 await fetch(`/taches/${idTacheEnCours}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -117,6 +118,16 @@
 
             modale.style.display = 'none'; 
             chargerTaches(); 
+        };
+
+        // --- NOUVEAU : Action du bouton Reset ---
+        document.getElementById('btnReset').onclick = async () => {
+            const confirmation = confirm("Attention, cela va supprimer TOUTES les tâches et remettre les identifiants à 1. Êtes-vous sûr ?");
+            
+            if (confirmation) {
+                await fetch('/reset-taches', { method: 'DELETE' });
+                chargerTaches(); 
+            }
         };
 
         chargerTaches();
