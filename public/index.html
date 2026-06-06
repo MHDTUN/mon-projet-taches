@@ -38,24 +38,22 @@
         const corpsTableau = document.getElementById('corpsTableau');
         const titreModale = document.getElementById('titreModale');
         
-        // Cette variable secrète va retenir l'ID de la tâche qu'on modifie. 
-        // Si elle est sur "null", ça veut dire qu'on crée une nouvelle tâche.
         let idTacheEnCours = null; 
 
         // --- GESTION DE LA MODALE ---
         
         // 1. Ouvrir pour CRÉER
         document.getElementById('btnOuvrirModale').onclick = () => {
-            idTacheEnCours = null; // On remet à zéro
+            idTacheEnCours = null; 
             titreModale.innerText = "Créer une tâche";
             document.getElementById('inputTitre').value = '';
             document.getElementById('inputStatut').value = '';
             modale.style.display = 'block';
         };
 
-        // 2. Ouvrir pour MODIFIER (Cette fonction sera appelée par les boutons du tableau)
+        // 2. Ouvrir pour MODIFIER
         window.ouvrirModification = (id, titre, statut) => {
-            idTacheEnCours = id; // On mémorise la tâche qu'on touche
+            idTacheEnCours = id; 
             titreModale.innerText = "Modifier la tâche";
             document.getElementById('inputTitre').value = titre;
             document.getElementById('inputStatut').value = statut;
@@ -76,7 +74,6 @@
             
             corpsTableau.innerHTML = ''; 
             taches.forEach(tache => {
-                // On ajoute les boutons avec leurs actions spécifiques
                 corpsTableau.innerHTML += `
                     <tr>
                         <td>${tache.id}</td>
@@ -94,7 +91,7 @@
         // Supprimer une tâche (DELETE)
         window.supprimerTache = async (id) => {
             await fetch(`/taches/${id}`, { method: 'DELETE' });
-            chargerTaches(); // On met à jour l'affichage
+            chargerTaches(); 
         };
 
         // Enregistrer (CREATE ou UPDATE)
@@ -110,11 +107,11 @@
                     body: JSON.stringify({ titre: titre, statut: statut })
                 });
             } else {
-                // Si on a un ID, on MODIFIE (PUT)
+                // Si on a un ID, on MODIFIE (PUT) - CORRECTION APPLIQUÉE ICI
                 await fetch(`/taches/${idTacheEnCours}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ statut: statut }) 
+                    body: JSON.stringify({ titre: titre, statut: statut }) 
                 });
             }
 
